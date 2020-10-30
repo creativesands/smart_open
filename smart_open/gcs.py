@@ -214,7 +214,12 @@ class Reader(io.BufferedIOBase):
         if client is None:
             client = google.cloud.storage.Client()
 
-        self._blob = client.bucket(bucket).get_blob(key)  # type: google.cloud.storage.Blob
+        parts = key.split('#')
+        if len(parts) == 2:
+            item, gen_id = parts
+        else:
+            item, gen_id = parts[0], None
+        self._blob = client.bucket(bucket).get_blob(item, if_generation_match=gen_id)  # type: google.cloud.storage.Blob
 
         if self._blob is None:
             raise google.cloud.exceptions.NotFound('blob %s not found in %s' % (key, bucket))
